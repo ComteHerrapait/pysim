@@ -63,7 +63,7 @@ def main(number):
 # %% main function
 if __name__ == "__main__" :
     if len(argv) == 1:
-        number = 20
+        number = 100
     else :
         number = int(argv[1])
         
