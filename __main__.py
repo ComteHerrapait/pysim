@@ -48,7 +48,7 @@ def main(number):
         processes = []
         for e in entities:
             #loop(e)
-            p = Thread(target=loop, args=(e,))
+            p = Process(target=loop, args=(e,))
             processes.append(p)
             p.start()
             
@@ -63,15 +63,17 @@ def main(number):
         #displays text
         textsurface = myfont.render(str(floor(fpsClock.get_fps()))+" fps", True, (255, 0, 0))
         screen.blit(textsurface,(0,0))
-        
+        print(floor(fpsClock.get_fps()))
         #finalize display, flips it to the user
         pygame.display.flip()
         
         for event in pygame.event.get():
            if event.type == pygame.QUIT:
+               print("closing...(x)")
                running = False
            elif event.type == pygame.KEYDOWN:
                if event.key == pygame.K_ESCAPE:
+                   print("closing... (esc)")
                    running = False  
     #%% end
     pygame.quit()
