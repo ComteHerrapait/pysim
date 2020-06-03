@@ -50,7 +50,7 @@ class Entity:
         self.limitSpeed()
         
         self.move()        
-        pygame.draw.circle(self.screen, (0,0,255), self.position_[:2], FRIEND_RADIUS, 1)
+        #pygame.draw.circle(self.screen, (0,0,255), self.position_[:2], FRIEND_RADIUS, 1)
         for f in self.friends:
             pygame.draw.line(self.screen, (0,255,0), self.position_[:2], f.position_[:2], 1)
                     
@@ -96,13 +96,13 @@ class Entity:
         averageSpeed = [FACTOR_ALIGN * totalSpeed[0]/len(self.friends),
                         FACTOR_ALIGN * totalSpeed[1]/len(self.friends)]
         self.speed_ = addVectors(self.speed_,averageSpeed)
-        print("align : ", np.linalg.norm(averageSpeed))
+        if FACTOR_DEBUG : print("align : ", np.linalg.norm(averageSpeed))
         
     def addNoise(self, standardDeviation):
         noise = [FACTOR_NOISE * gauss(0,standardDeviation) ,
                  FACTOR_NOISE * gauss(0,standardDeviation) ]
         self.speed_ = addVectors(self.speed_,noise)
-        print("noise : ", np.linalg.norm(noise))
+        if FACTOR_DEBUG : print("noise : ", np.linalg.norm(noise))
     
     def groupWithFriends(self):
         if len(self.friends) == 0 : return
@@ -111,12 +111,13 @@ class Entity:
         vector = [FACTOR_ATTRACT * group_pos[0] - self.position_[0],
                   FACTOR_ATTRACT * group_pos[1] - self.position_[1]]
         self.speed_ = addVectors(self.speed_,vector)
-        print("attract : ", np.linalg.norm(vector))
+        if FACTOR_DEBUG : print("attract : ", np.linalg.norm(vector))
         
     def dodgeFriends(self):
         if len(self.friends) == 0 : return
         total = [0,0]
         for f in self.friends:
+            if (self.distance(f.position_[:2]) < CONFORT_ZONE):
             pos = f.position_[:2]
             d = self.distance(pos)
             vect = [self.position_[0]-pos[0], self.position_[1]-pos[1]]
@@ -125,6 +126,7 @@ class Entity:
             total = addVectors(total, weighted)
         print("reject : ", np.linalg.norm(total))
         self.speed_ = addVectors(self.speed_,total)
+        if FACTOR_DEBUG : print("reject : ", np.linalg.norm(total))
         
         #pygame.draw.circle(self.screen, (255,0,0), self.position_[:2], CONFORT_ZONE, 1)
         
