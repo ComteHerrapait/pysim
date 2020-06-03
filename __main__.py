@@ -34,27 +34,26 @@ def main(number):
     running = True
     while running:
         fpsClock.tick(FPS) #limit to 60fps
-        
         screen.fill(black)
 
             #movement
         for e in entities:
             e.update(entities)
             screen.blit(e.image_,e.position_)
-            
-            
+                        
         #displays text
         textsurface = myfont.render(str(floor(fpsClock.get_fps()))+" fps", True, (255, 0, 0))
         screen.blit(textsurface,(0,0))
         
         #finalize display, flips it to the user
-        pygame.display.flip()
         for event in pygame.event.get():
            if event.type == pygame.QUIT:
+               print("closing...(x)")
                running = False
            elif event.type == pygame.KEYDOWN:
                if event.key == pygame.K_ESCAPE:
-                   running = False  
+                   print("closing... (esc)")
+                   running = False   
     #%% end
     pygame.quit()
     

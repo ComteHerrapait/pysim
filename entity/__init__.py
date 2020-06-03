@@ -18,6 +18,7 @@ FACTOR_ALIGN   = 10
 FACTOR_REJECT  = 100
 FACTOR_ATTRACT = 10
 FACTOR_NOISE   = 10
+FACTOR_DEBUG = False
 
 def addVectors(v1,v2):
     return [v1[0]+v2[0],v1[1]+v2[1]]
@@ -50,9 +51,9 @@ class Entity:
         self.limitSpeed()
         
         self.move()        
-        #pygame.draw.circle(self.screen, (0,0,255), self.position_[:2], FRIEND_RADIUS, 1)
-        for f in self.friends:
-            pygame.draw.line(self.screen, (0,255,0), self.position_[:2], f.position_[:2], 1)
+        pygame.draw.circle(self.screen, (0,0,255), self.getPos(), FRIEND_RADIUS, 1)
+        #for f in self.friends:
+        #    pygame.draw.line(self.screen, (0,255,0), self.getPos(), f.getPos(), 1)
                     
     def move(self):
         self.position_.move_ip(self.speed_)
@@ -106,7 +107,7 @@ class Entity:
     
     def groupWithFriends(self):
         if len(self.friends) == 0 : return
-        friends_pos = [f.position_[:2] for f in self.friends]
+        friends_pos = [f.getPos() for f in self.friends]
         group_pos = np.average(friends_pos, axis=0)
         vector = [FACTOR_ATTRACT * group_pos[0] - self.position_[0],
                   FACTOR_ATTRACT * group_pos[1] - self.position_[1]]
@@ -117,19 +118,20 @@ class Entity:
         if len(self.friends) == 0 : return
         total = [0,0]
         for f in self.friends:
-            if (self.distance(f.position_[:2]) < CONFORT_ZONE):
-            pos = f.position_[:2]
-            d = self.distance(pos)
-            vect = [self.position_[0]-pos[0], self.position_[1]-pos[1]]
-            weighted = [FACTOR_REJECT * vect[0]/d,
-                        FACTOR_REJECT * vect[1]/d]
-            total = addVectors(total, weighted)
-        print("reject : ", np.linalg.norm(total))
+            if (self.distance(f.getPos()) < CONFORT_ZONE):
+                pos = f.getPos()
+                d = self.distance(pos)
+                vect = [self.position_[0]-pos[0], self.position_[1]-pos[1]]
+                weighted = [FACTOR_REJECT * vect[0]/d,
+                            FACTOR_REJECT * vect[1]/d]
+                total = addVectors(total, weighted)
         self.speed_ = addVectors(self.speed_,total)
-        if FACTOR_DEBUG : print("reject : ", np.linalg.norm(total))
-        
-        #pygame.draw.circle(self.screen, (255,0,0), self.position_[:2], CONFORT_ZONE, 1)
-        
+        if FACTOR_DEBUG : print("reject : ", np.linalg.norm(total))        
+        #pygame.draw.circle(self.screen, (255,0,0), self.getPos(), CONFORT_ZONE, 1)
+    
+    def getPos(self):
+        return [ self.position_[0], self.position_[1]]
+    
     def reboundOnEdges(self, hardborders=False):
         #change direction when hitting wall
         if self.position_.left < 0 or self.position_.right > self.width_:
