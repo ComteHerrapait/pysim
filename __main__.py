@@ -13,10 +13,11 @@ from sys import argv
 from multiprocessing import Process
 from threading import Thread
 
-def loop(single, group):
-    single.update(group)
+entities = []
+def loop(single, everyone = entities):
+    single.update(everyone)
     
-    
+
 def main(number):
     #%% initialization
     pygame.init()
@@ -46,8 +47,8 @@ def main(number):
             #movement
         processes = []
         for e in entities:
-            loop(e,entities)
-            p = Thread(target=loop, args=(e,entities,))
+            #loop(e)
+            p = Thread(target=loop, args=(e,))
             processes.append(p)
             p.start()
             
@@ -56,6 +57,8 @@ def main(number):
             
         for e in entities:
             screen.blit(e.image_,e.position_)
+            for f in e.friends:
+                pygame.draw.line(screen, (0,255,0), e.getPos(), f.getPos(), 1)
             
         #displays text
         textsurface = myfont.render(str(floor(fpsClock.get_fps()))+" fps", True, (255, 0, 0))
@@ -78,7 +81,7 @@ def main(number):
 # %% main function
 if __name__ == "__main__" :
     if len(argv) == 1:
-        number = 50
+        number = 100
     else :
         number = int(argv[1])
         
