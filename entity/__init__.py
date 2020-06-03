@@ -10,8 +10,14 @@ from random import uniform, gauss, random
 import numpy as np
 
 MAX_SPEED = 3
-FRIEND_RADIUS = 100
-INDIVIDUAL_SIZE = 10
+FRIEND_RADIUS = 120
+INDIVIDUAL_SIZE = 20
+CONFORT_ZONE = 60
+
+FACTOR_ALIGN   = 10
+FACTOR_REJECT  = 100
+FACTOR_ATTRACT = 10
+FACTOR_NOISE   = 10
 
 def addVectors(v1,v2):
     return [v1[0]+v2[0],v1[1]+v2[1]]
@@ -19,8 +25,9 @@ def addVectors(v1,v2):
 class Entity:
     """ moving entity for my simulation """
     
-    def __init__(self, screensize, speed):
+    def __init__(self, screensize, speed, screen):
         """constructor"""
+        self.screen = screen
         self.speed_ = speed
         self.width_, self.height_ = screensize
         self.center = (self.width_/2, self.height_/2)
@@ -31,18 +38,21 @@ class Entity:
         self.image_ = self.image_source_
         self.friends = []
         
-    def update(self, others):
-        
+    def update(self, others):                    
+        self.warpOnEdges()    
         self.getFriends(others)
-        self.warpOnEdges()
+                
         self.groupWithFriends()
         self.alignOnFriends()
         self.dodgeFriends()
-        #self.addNoise(0.07)
+        self.addNoise(0.05)
         
         self.limitSpeed()
-        self.move()
-
+        
+        self.move()        
+        pygame.draw.circle(self.screen, (0,0,255), self.position_[:2], FRIEND_RADIUS, 1)
+        for f in self.friends:
+            pygame.draw.line(self.screen, (0,255,0), self.position_[:2], f.position_[:2], 1)
                     
     def move(self):
         self.position_.move_ip(self.speed_)
@@ -83,34 +93,40 @@ class Entity:
         totalSpeed = (0,0)
         for f in self.friends:
             totalSpeed = addVectors(totalSpeed,f.speed_)
-        averageSpeed = (totalSpeed[0]/len(self.friends),totalSpeed[1]/len(self.friends))
+        averageSpeed = [FACTOR_ALIGN * totalSpeed[0]/len(self.friends),
+                        FACTOR_ALIGN * totalSpeed[1]/len(self.friends)]
         self.speed_ = addVectors(self.speed_,averageSpeed)
+        print("align : ", np.linalg.norm(averageSpeed))
         
     def addNoise(self, standardDeviation):
-        self.speed_ = addVectors(self.speed_,[gauss(0,standardDeviation),gauss(0,standardDeviation)])
-        
+        noise = [FACTOR_NOISE * gauss(0,standardDeviation) ,
+                 FACTOR_NOISE * gauss(0,standardDeviation) ]
+        self.speed_ = addVectors(self.speed_,noise)
+        print("noise : ", np.linalg.norm(noise))
+    
     def groupWithFriends(self):
         if len(self.friends) == 0 : return
         friends_pos = [f.position_[:2] for f in self.friends]
         group_pos = np.average(friends_pos, axis=0)
-        vector = [group_pos[0] - self.position_[0], group_pos[1] - self.position_[1]]
+        vector = [FACTOR_ATTRACT * group_pos[0] - self.position_[0],
+                  FACTOR_ATTRACT * group_pos[1] - self.position_[1]]
         self.speed_ = addVectors(self.speed_,vector)
+        print("attract : ", np.linalg.norm(vector))
         
     def dodgeFriends(self):
         if len(self.friends) == 0 : return
-        weightedAvoid = [ [self.position_[0]-f.position_[0]/self.distance(f.position_[:2]),
-                           self.position_[1]-f.position_[0]/self.distance(f.position_[:2])] 
-                        for f in self.friends]
-        weightedAvoid = []
+        total = [0,0]
         for f in self.friends:
-            vector = [self.position_[0]-f.position_[0], self.position_[1]-f.position_[0]] 
-            N = np.linalg.norm(vector) 
-            vector[0] = vector[0] / N * self.distance(f.position_[:2])
-            vector[1] = vector[1] / N * self.distance(f.position_[:2])
-            weightedAvoid. append(vector)
-        DodgeVector = np.average(weightedAvoid, axis=0)
-        self.speed_ = addVectors(self.speed_,DodgeVector)
+            pos = f.position_[:2]
+            d = self.distance(pos)
+            vect = [self.position_[0]-pos[0], self.position_[1]-pos[1]]
+            weighted = [FACTOR_REJECT * vect[0]/d,
+                        FACTOR_REJECT * vect[1]/d]
+            total = addVectors(total, weighted)
+        print("reject : ", np.linalg.norm(total))
+        self.speed_ = addVectors(self.speed_,total)
         
+        #pygame.draw.circle(self.screen, (255,0,0), self.position_[:2], CONFORT_ZONE, 1)
         
     def reboundOnEdges(self, hardborders=False):
         #change direction when hitting wall

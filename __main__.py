@@ -29,7 +29,7 @@ def main(number):
     
     fpsClock = pygame.time.Clock()
     speeds = [[uniform(-10,10), uniform(-10,10)] for i in range(number)]
-    entities = [Entity(size, s) for s in speeds]
+    entities = [Entity(size, s, screen) for s in speeds]
     #%% main loop
     running = True
     while running:
@@ -41,7 +41,7 @@ def main(number):
         for e in entities:
             e.update(entities)
             screen.blit(e.image_,e.position_)
-            #pygame.draw.circle(screen, (0,0,255), e.position_[:2], FRIEND_RADIUS, 2)
+            
             
         #displays text
         textsurface = myfont.render(str(floor(fpsClock.get_fps()))+" fps", True, (255, 0, 0))
