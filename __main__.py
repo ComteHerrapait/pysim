@@ -6,7 +6,7 @@ Created on Mon Jun  1 17:54:20 2020
 """
 #%% imports
 import pygame
-from entity import Entity, FRIEND_RADIUS
+from entity import Entity, FRIEND_RADIUS, INDIVIDUAL_SIZE
 from random import uniform
 from numpy import floor
 from sys import argv
@@ -28,6 +28,7 @@ def main(number):
     screen = pygame.display.set_mode(size)
     
     fpsClock = pygame.time.Clock()
+    
     speeds = [[uniform(-10,10), uniform(-10,10)] for i in range(number)]
     entities = [Entity(size, s, screen) for s in speeds]
     #%% main loop
@@ -39,13 +40,15 @@ def main(number):
             #movement
         for e in entities:
             e.update(entities)
-            screen.blit(e.image_,e.position_)
+            pos = [e.position_[0]-INDIVIDUAL_SIZE/2, e.position_[1]-INDIVIDUAL_SIZE/2,]
+            screen.blit(e.image_,pos)
                         
         #displays text
         textsurface = myfont.render(str(floor(fpsClock.get_fps()))+" fps", True, (255, 0, 0))
         screen.blit(textsurface,(0,0))
         
         #finalize display, flips it to the user
+        pygame.display.flip()
         for event in pygame.event.get():
            if event.type == pygame.QUIT:
                print("closing...(x)")

@@ -6,18 +6,18 @@ Created on Tue Jun  2 20:31:52 2020
 """
 import pygame
 from math import atan2, pi, sin, cos, sqrt
-from random import uniform, gauss, random
+from random import uniform, gauss
 import numpy as np
 
 MAX_SPEED = 3
 FRIEND_RADIUS = 120
-INDIVIDUAL_SIZE = 20
+INDIVIDUAL_SIZE = 30
 CONFORT_ZONE = 60
 
-FACTOR_ALIGN   = 10
+FACTOR_ALIGN   = 1
 FACTOR_REJECT  = 100
-FACTOR_ATTRACT = 10
-FACTOR_NOISE   = 10
+FACTOR_ATTRACT = 1
+FACTOR_NOISE   = 1
 FACTOR_DEBUG = False
 
 def addVectors(v1,v2):
@@ -40,7 +40,7 @@ class Entity:
         self.friends = []
         
     def update(self, others):                    
-        self.warpOnEdges()    
+            
         self.getFriends(others)
                 
         self.groupWithFriends()
@@ -50,10 +50,12 @@ class Entity:
         
         self.limitSpeed()
         
-        self.move()        
-        pygame.draw.circle(self.screen, (0,0,255), self.getPos(), FRIEND_RADIUS, 1)
-        #for f in self.friends:
-        #    pygame.draw.line(self.screen, (0,255,0), self.getPos(), f.getPos(), 1)
+        self.move()
+        self.warpOnEdges()        
+        #pygame.draw.circle(self.screen, (0,0,255), self.getPos(), FRIEND_RADIUS, 1)
+        pygame.draw.circle(self.screen, (0,0,255), self.getPos(), 2)
+        for f in self.friends:
+            pygame.draw.line(self.screen, (0,255,0), self.getPos(), f.getPos(), 1)
                     
     def move(self):
         self.position_.move_ip(self.speed_)
@@ -72,8 +74,22 @@ class Entity:
         self.image_ = pygame.transform.rotate(self.image_source_, angle)
             
     def warpOnEdges(self):
-        self.position_[0] = (self.position_[0] + self.width_) % self.width_;
-        self.position_[1] = (self.position_[1] + self.height_) % self.height_;
+        BORDER_X = 100
+        BORDER_Y = 100
+        if (self.position_[0] < BORDER_X) :
+            self.position_[0] = self.width_ - BORDER_X
+            
+        if (self.position_[1] < BORDER_X) :
+            self.position_[1] = self.height_ - BORDER_Y
+            
+        if (self.position_[0] > self.width_ - BORDER_X) :
+            self.position_[0] = BORDER_X
+            
+        if (self.position_[1] > self.height_ - BORDER_X) :
+            self.position_[1] = BORDER_Y
+            
+        #self.position_[0] = (self.position_[0] + self.width_) % self.width_;
+        #self.position_[1] = (self.position_[1] + self.height_) % self.height_;
             
     def distance(self, point):
         return sqrt ( (point[0] - self.position_[0])**2 +
@@ -100,8 +116,10 @@ class Entity:
         if FACTOR_DEBUG : print("align : ", np.linalg.norm(averageSpeed))
         
     def addNoise(self, standardDeviation):
+        
         noise = [FACTOR_NOISE * gauss(0,standardDeviation) ,
                  FACTOR_NOISE * gauss(0,standardDeviation) ]
+        if (uniform(0,10) < 7) : noise = [0, 0]
         self.speed_ = addVectors(self.speed_,noise)
         if FACTOR_DEBUG : print("noise : ", np.linalg.norm(noise))
     
@@ -109,8 +127,8 @@ class Entity:
         if len(self.friends) == 0 : return
         friends_pos = [f.getPos() for f in self.friends]
         group_pos = np.average(friends_pos, axis=0)
-        vector = [FACTOR_ATTRACT * group_pos[0] - self.position_[0],
-                  FACTOR_ATTRACT * group_pos[1] - self.position_[1]]
+        vector = [FACTOR_ATTRACT * (group_pos[0] - self.position_[0]),
+                  FACTOR_ATTRACT * (group_pos[1] - self.position_[1])]
         self.speed_ = addVectors(self.speed_,vector)
         if FACTOR_DEBUG : print("attract : ", np.linalg.norm(vector))
         
