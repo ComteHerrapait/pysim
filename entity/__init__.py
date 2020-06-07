@@ -10,20 +10,19 @@ from random import uniform, gauss
 import numpy as np
 from myVector import myVector
 
-MAX_SPEED = 10
+MAX_SPEED = 7
 FRIEND_RADIUS = 120
 INDIVIDUAL_SIZE = 30
 CONFORT_ZONE = 60
 
+BORDER_X = 100
+BORDER_Y = 100
+        
 FACTOR_ALIGN   = 1
 FACTOR_REJECT  = 1
 FACTOR_ATTRACT = 1
-FACTOR_NOISE   = 1
 FACTOR_DEBUG = False
-
-def addVectors(v1,v2):
-    return [v1[0]+v2[0],v1[1]+v2[1]]
-    
+ 
 class Entity:
     """ moving entity for my simulation """
     
@@ -39,17 +38,21 @@ class Entity:
         self.image_ = self.image_source_
         self.friends = []
         
-    def update(self, others):                    
+    def update(self, others, scaryblobs):                    
             
         self.getFriends(others)
                 
         _group = self.groupWithFriends()
         _align = self.alignOnFriends()
         _dodge = self.dodgeFriends()
+        _scare = self.dodgeScary(scaryblobs)
+        _edges = self.dodgeEdges()
         
         self.speed_.add(_group)
         self.speed_.add(_align)
         self.speed_.add(_dodge)
+        self.speed_.add(_scare)       
+        self.speed_.add(_edges)
         
         self.speed_.rotate(gauss(0,1)/50)
         self.limitSpeed()
@@ -79,8 +82,6 @@ class Entity:
         pygame.draw.line(screen, (0,255,0), pos, head)
         
     def warpOnEdges(self):
-        BORDER_X = 100
-        BORDER_Y = 100
         if (self.position_[0] < BORDER_X) :
             self.position_[0] = self.width_ - BORDER_X
             
@@ -136,15 +137,33 @@ class Entity:
         if len(self.friends) == 0 : return myVector(0,0)
         total = myVector(0,0)
         for f in self.friends:
-            if (self.distance(f.getPos()) < CONFORT_ZONE):
-                pos = f.getPos()
-                d = self.distance(pos)
+            pos = f.getPos()
+            d = self.distance(pos)
+            if d < CONFORT_ZONE and d > 0:              
                 vect = myVector ( self.position_[0]-pos[0], self.position_[1]-pos[1] )
                 vect.multiply(1/d)
                 total.add(vect)
         total.normalize()
         return total  
     
+    def dodgeScary(self, scaryblobs):
+        if len(scaryblobs) == 0 : return myVector(0,0)
+        total = myVector(0,0)
+        for sb in scaryblobs:
+            dist = self.distance(sb.position)
+            if dist < FRIEND_RADIUS and dist > 0:
+                vect = myVector ( self.position_[0]-sb.position[0], self.position_[1]-sb.position[1] )
+                vect.multiply(1/dist)
+                total.add(vect)
+        total.normalize()
+        return total
+    
+    def dodgeEdges(self):
+        X = 0
+        Y = 0
+        return myVector(X,Y)
+          
+        
     def getPos(self):
         return [ self.position_[0], self.position_[1]]
                 
