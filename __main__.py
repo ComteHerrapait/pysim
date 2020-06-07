@@ -17,7 +17,8 @@ def main(number):
     #%% initialization
     pygame.init()
         #variables
-    size = width, height = 1024, int(1024)
+    SCREENSIZE = 900
+    size = width, height = SCREENSIZE*2, SCREENSIZE
     
     black = 0, 0, 0
     white = 255,255,255
@@ -50,9 +51,12 @@ def main(number):
             sb.display(screen)
             
         #displays text
-        textsurface = myfont.render(str(floor(pygame.time.get_ticks()-time_begin))+" ms", True, (255, 0, 0))
+        textsurface = myfont.render(str(floor(pygame.time.get_ticks()-time_begin))+" ms",
+                                    True, (255, 0, 0))
         screen.blit(textsurface,(0,0))
-        
+        textsurface = myfont.render("boids : "+str(len(entities))+" blobs : "+str(len(scaryblobs)),
+                                    True, (255, 0, 0))
+        screen.blit(textsurface,(0,20))
         #finalize display, flips it to the user
         pygame.display.flip()
         for event in pygame.event.get():
@@ -72,6 +76,13 @@ def main(number):
                    entities.append( Entity(screen, pos_down, speed) )
                if event.button == 3: #right click
                    scaryblobs.append(ScaryBlob(pos_up))
+               if event.button in [4,5]: #wheel
+                   if event.button == 4 : SCREENSIZE+=10 
+                   else : SCREENSIZE-=10 
+                   size = width, height = SCREENSIZE*2, SCREENSIZE
+                   screen = pygame.display.set_mode(size)
+                   for e in entities :
+                       e.newScreen(screen)
                    
     #%% end
     pygame.quit()

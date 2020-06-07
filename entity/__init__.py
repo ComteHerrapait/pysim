@@ -28,7 +28,6 @@ class Entity:
     
     def __init__(self, screen, pos, speed):
         """constructor"""
-        #print("entity : ",screensize, speed, screen)
         self.speed_ = myVector(speed[0],speed[1])
         self.width_, self.height_ = screen.get_size()
         img = pygame.image.load("arrow-white.png")
@@ -168,7 +167,10 @@ class Entity:
         
     def getPos(self):
         return [ self.position_[0], self.position_[1]]
-                
+    
+    def newScreen(self,screen):
+        self.width_, self.height_ = screen.get_size()
+
     def __del__(self):
         """destructor"""
         pass
