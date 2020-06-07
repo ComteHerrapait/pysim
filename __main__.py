@@ -28,9 +28,9 @@ def main(number):
     screen = pygame.display.set_mode(size)
     fpsClock = pygame.time.Clock()
     
-    speeds = [[uniform(-10,10), uniform(-10,10)] for i in range(number)]
-    positions = [[uniform(0,width), uniform(0,height)] for i in range(number)]
-    entities = [Entity(screen, positions[i], speeds[i] ) for i in range(number)]
+    speeds = [[uniform(-10,10), uniform(-10,10)]            for i in range(number)]
+    positions = [[uniform(0,width), uniform(0,height)]      for i in range(number)]
+    entities = [Entity(screen, positions[i], speeds[i] )    for i in range(number)]
     #%% main loop
     running = True
     while running:
