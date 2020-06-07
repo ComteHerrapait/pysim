@@ -10,7 +10,7 @@ from random import uniform, gauss
 import numpy as np
 from myVector import myVector
 
-MAX_SPEED = 3
+MAX_SPEED = 10
 FRIEND_RADIUS = 120
 INDIVIDUAL_SIZE = 30
 CONFORT_ZONE = 60
@@ -30,7 +30,6 @@ class Entity:
     def __init__(self, screen, pos, speed):
         """constructor"""
         #print("entity : ",screensize, speed, screen)
-        self.screen = screen
         self.speed_ = myVector(speed[0],speed[1])
         self.width_, self.height_ = screen.get_size()
         img = pygame.image.load("arrow-white.png")
@@ -47,30 +46,38 @@ class Entity:
         _group = self.groupWithFriends()
         _align = self.alignOnFriends()
         _dodge = self.dodgeFriends()
-        #_noise = self.addNoise()
         
         self.speed_.add(_group)
         self.speed_.add(_align)
         self.speed_.add(_dodge)
-        #self.speed_.add(_noise)
         
-        #self.speed_.rotate(gauss(0,1)/50)
+        self.speed_.rotate(gauss(0,1)/50)
         self.limitSpeed()
         
         self.move()
         self.warpOnEdges()        
-        #pygame.draw.circle(self.screen, (0,0,255), self.getPos(), FRIEND_RADIUS, 1)
-        pygame.draw.circle(self.screen, (0,0,255), self.getPos(), 2)
-        for f in self.friends:
-            pygame.draw.line(self.screen, (0,255,0), self.getPos(), f.getPos(), 1)
+
                     
     def move(self):
         self.position_.move_ip(self.speed_.array())
         
             #returns final state of sprite
         self.image_ = pygame.transform.rotate(self.image_source_, self.speed_.getAngle()+45) #angle offset because of the image used
-        
+    
+    def displayImage(self, screen):
+        screen.blit(self.image_,
+                    [self.position_[0]-INDIVIDUAL_SIZE/2, self.position_[1]-INDIVIDUAL_SIZE/2,])
+        #pygame.draw.circle(screen, (0,0,255), self.getPos(), FRIEND_RADIUS, 1)
+        #pygame.draw.circle(screen, (255,0,0), self.getPos(), CONFORT_ZONE, 1)
+        for f in self.friends:
+            pygame.draw.line(screen, (0,255,0), self.getPos(), f.getPos(), 1)
             
+    def displaySimple(self,screen):
+        pos = self.getPos()
+        head = [pos[0] + 3 * self.speed_.x, pos[1] + 3 * self.speed_.y]
+        pygame.draw.circle(screen, (0,0,255), pos, 6)
+        pygame.draw.line(screen, (0,255,0), pos, head)
+        
     def warpOnEdges(self):
         BORDER_X = 100
         BORDER_Y = 100
@@ -137,7 +144,6 @@ class Entity:
                 total.add(vect)
         total.normalize()
         return total  
-        #pygame.draw.circle(self.screen, (255,0,0), self.getPos(), CONFORT_ZONE, 1)
     
     def getPos(self):
         return [ self.position_[0], self.position_[1]]

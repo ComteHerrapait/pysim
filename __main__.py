@@ -41,8 +41,7 @@ def main(number):
             #movement
         for e in entities:
             e.update(entities)
-            pos = [e.position_[0]-INDIVIDUAL_SIZE/2, e.position_[1]-INDIVIDUAL_SIZE/2,]
-            screen.blit(e.image_,pos)
+            e.displaySimple(screen)
                         
         #displays text
         textsurface = myfont.render(str(floor(pygame.time.get_ticks()-time_begin))+" ms", True, (255, 0, 0))
