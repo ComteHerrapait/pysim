@@ -26,15 +26,16 @@ def main(number):
     myfont = pygame.font.SysFont('Arial', 14)
     
     screen = pygame.display.set_mode(size)
-    
     fpsClock = pygame.time.Clock()
     
     speeds = [[uniform(-10,10), uniform(-10,10)] for i in range(number)]
-    entities = [Entity(size, s, screen) for s in speeds]
+    positions = [[uniform(0,width), uniform(0,height)] for i in range(number)]
+    entities = [Entity(screen, positions[i], speeds[i] ) for i in range(number)]
     #%% main loop
     running = True
     while running:
         fpsClock.tick(FPS) #limit to 60fps
+        time_begin = pygame.time.get_ticks()
         screen.fill(black)
 
             #movement
@@ -44,7 +45,7 @@ def main(number):
             screen.blit(e.image_,pos)
                         
         #displays text
-        textsurface = myfont.render(str(floor(fpsClock.get_fps()))+" fps", True, (255, 0, 0))
+        textsurface = myfont.render(str(floor(pygame.time.get_ticks()-time_begin))+" ms", True, (255, 0, 0))
         screen.blit(textsurface,(0,0))
         
         #finalize display, flips it to the user
@@ -56,7 +57,13 @@ def main(number):
            elif event.type == pygame.KEYDOWN:
                if event.key == pygame.K_ESCAPE:
                    print("closing... (esc)")
-                   running = False   
+                   running = False           
+           if event.type == pygame.MOUSEBUTTONDOWN:
+               pos_down = pygame.mouse.get_pos()
+           if event.type == pygame.MOUSEBUTTONUP and pos_down != (0,0):
+               pos_up = pygame.mouse.get_pos()   
+               speed = [pos_up[0]-pos_down[0],pos_up[1]-pos_down[1]]
+               entities.append( Entity(screen, pos_down, speed) )
     #%% end
     pygame.quit()
     

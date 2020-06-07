@@ -15,10 +15,10 @@ INDIVIDUAL_SIZE = 30
 CONFORT_ZONE = 60
 
 FACTOR_ALIGN   = 1
-FACTOR_REJECT  = 100
+FACTOR_REJECT  = 1
 FACTOR_ATTRACT = 1
 FACTOR_NOISE   = 1
-FACTOR_DEBUG = False
+FACTOR_DEBUG = True
 
 def addVectors(v1,v2):
     return [v1[0]+v2[0],v1[1]+v2[1]]
@@ -26,16 +26,16 @@ def addVectors(v1,v2):
 class Entity:
     """ moving entity for my simulation """
     
-    def __init__(self, screensize, speed, screen):
+    def __init__(self, screen, pos, speed):
         """constructor"""
+        #print("entity : ",screensize, speed, screen)
         self.screen = screen
         self.speed_ = speed
-        self.width_, self.height_ = screensize
-        self.center = (self.width_/2, self.height_/2)
+        self.width_, self.height_ = screen.get_size()
         img = pygame.image.load("arrow-white.png")
         self.image_source_ = pygame.transform.scale(img, (INDIVIDUAL_SIZE,INDIVIDUAL_SIZE))
         self.position_ = self.image_source_.get_rect()
-        self.position_.move_ip(uniform(0,self.width_), uniform(0,self.height_))
+        self.position_.move_ip(pos)
         self.image_ = self.image_source_
         self.friends = []
         
@@ -113,7 +113,7 @@ class Entity:
         averageSpeed = [FACTOR_ALIGN * totalSpeed[0]/len(self.friends),
                         FACTOR_ALIGN * totalSpeed[1]/len(self.friends)]
         self.speed_ = addVectors(self.speed_,averageSpeed)
-        if FACTOR_DEBUG : print("align : ", np.linalg.norm(averageSpeed))
+        if FACTOR_DEBUG : print("align:\t", round(np.linalg.norm(averageSpeed),2), "|",averageSpeed)
         
     def addNoise(self, standardDeviation):
         
@@ -121,7 +121,7 @@ class Entity:
                  FACTOR_NOISE * gauss(0,standardDeviation) ]
         if (uniform(0,10) < 7) : noise = [0, 0]
         self.speed_ = addVectors(self.speed_,noise)
-        if FACTOR_DEBUG : print("noise : ", np.linalg.norm(noise))
+        if FACTOR_DEBUG : print("noise:\t", round(np.linalg.norm(noise),2), "|",noise)
     
     def groupWithFriends(self):
         if len(self.friends) == 0 : return
@@ -130,7 +130,7 @@ class Entity:
         vector = [FACTOR_ATTRACT * (group_pos[0] - self.position_[0]),
                   FACTOR_ATTRACT * (group_pos[1] - self.position_[1])]
         self.speed_ = addVectors(self.speed_,vector)
-        if FACTOR_DEBUG : print("attract : ", np.linalg.norm(vector))
+        if FACTOR_DEBUG : print("group:\t", round(np.linalg.norm(vector),2), "|",vector)
         
     def dodgeFriends(self):
         if len(self.friends) == 0 : return
@@ -144,7 +144,7 @@ class Entity:
                             FACTOR_REJECT * vect[1]/d]
                 total = addVectors(total, weighted)
         self.speed_ = addVectors(self.speed_,total)
-        if FACTOR_DEBUG : print("reject : ", np.linalg.norm(total))        
+        if FACTOR_DEBUG : print("dodge:\t", round(np.linalg.norm(total),2), "|",total)        
         #pygame.draw.circle(self.screen, (255,0,0), self.getPos(), CONFORT_ZONE, 1)
     
     def getPos(self):
