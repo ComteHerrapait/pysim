@@ -15,8 +15,8 @@ FRIEND_RADIUS = 120
 INDIVIDUAL_SIZE = 30
 CONFORT_ZONE = 60
 
-BORDER_X = 100
-BORDER_Y = 100
+BORDER_X = 20
+BORDER_Y = 20
         
 FACTOR_ALIGN   = 1
 FACTOR_REJECT  = 1
@@ -47,6 +47,8 @@ class Entity:
         _dodge = self.dodgeFriends()
         _scare = self.dodgeScary(scaryblobs)
         _edges = self.dodgeEdges()
+        
+        _group.multiply(0.1)
         
         self.speed_.add(_group)
         self.speed_.add(_align)
