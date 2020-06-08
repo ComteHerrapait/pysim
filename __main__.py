@@ -11,22 +11,22 @@ from random import uniform
 from numpy import floor
 from sys import argv
 from ScaryBlob import ScaryBlob
-    
+from TheJaws import TheJaws
     
 def main(number):
     #%% initialization
     pygame.init()
         #variables
-    SCREENSIZE = 900
-    size = width, height = SCREENSIZE*2, SCREENSIZE
+    size = width, height = 1800, 900
+    
+    screen = pygame.display.set_mode(size, pygame.RESIZABLE)
     
     black = 0, 0, 0
     white = 255,255,255
     FPS = 60;
     
     myfont = pygame.font.SysFont('Arial', 14)
-    
-    screen = pygame.display.set_mode(size)
+
     fpsClock = pygame.time.Clock()
     #creates the entities
     speeds = [[uniform(-10,10), uniform(-10,10)]            for i in range(number)]
@@ -35,6 +35,10 @@ def main(number):
     
     #scaryblobs
     scaryblobs = []
+    
+    #The Jaws
+    jaws = []
+    
     #%% main loop
     running = True
     while running:
@@ -44,11 +48,15 @@ def main(number):
 
             #movement
         for e in entities:
-            e.update(entities, scaryblobs)
+            e.update(entities, scaryblobs, jaws)
             e.displaySimple(screen)
             
         for sb in scaryblobs:
             sb.display(screen)
+        
+        for j in jaws:
+            j.update(entities, scaryblobs, jaws)
+            j.diplayJaws(screen)
             
         #displays text
         textsurface = myfont.render(str(floor(pygame.time.get_ticks()-time_begin))+" ms",
@@ -60,29 +68,40 @@ def main(number):
         #finalize display, flips it to the user
         pygame.display.flip()
         for event in pygame.event.get():
-           if event.type == pygame.QUIT:
+            # if event.type == pygame.VIDEORESIZE:
+            #     size = width, height = event.dict['size']
+            #     screen = pygame.display.set_mode(size, pygame.RESIZABLE)
+            #     for e in entities:
+            #         e.newScreen(screen)
+            # elif  event.type == pygame.VIDEOEXPOSE :
+            #     size = width, height = event.dict['size']
+            #     screen = pygame.display.set_mode(size, pygame.RESIZABLE)
+            #     for e in entities:
+            #         e.newScreen(screen)
+            if event.type == pygame.QUIT:
                print("closing...(x)")
                running = False
-           elif event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                if event.key == pygame.K_ESCAPE:
                    print("closing... (esc)")
-                   running = False           
-           if event.type == pygame.MOUSEBUTTONDOWN:
-               pos_down = pygame.mouse.get_pos()
-           if event.type == pygame.MOUSEBUTTONUP and pos_down != (0,0):
-               pos_up = pygame.mouse.get_pos()
-               if event.button == 1: #left click
+                   running = False 
+               elif event.key == pygame.key.key_code("e"):
+                   entities = []
+                   scaryblobs = []
+                   jaws = []
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos_down = pygame.mouse.get_pos()
+            elif event.type == pygame.MOUSEBUTTONUP and pos_down != (0,0):
+                pos_up = pygame.mouse.get_pos()
+                if event.button == 1: #left click
                    speed = [pos_up[0]-pos_down[0],pos_up[1]-pos_down[1]]
                    entities.append( Entity(screen, pos_down, speed) )
-               if event.button == 3: #right click
+                elif event.button == 3: #right click
                    scaryblobs.append(ScaryBlob(pos_up))
-               if event.button in [4,5]: #wheel
-                   if event.button == 4 : SCREENSIZE+=10 
-                   else : SCREENSIZE-=10 
-                   size = width, height = SCREENSIZE*2, SCREENSIZE
-                   screen = pygame.display.set_mode(size)
-                   for e in entities :
-                       e.newScreen(screen)
+                elif event.button == 2: #middle click
+                   speed = [pos_up[0]-pos_down[0],pos_up[1]-pos_down[1]]
+                   jaws.append( TheJaws(screen, pos_down, speed) )
+
                    
     #%% end
     pygame.quit()

@@ -5,7 +5,7 @@ Created on Tue Jun  2 20:31:52 2020
 @author: ComteHerappait
 """
 import pygame
-from math import atan2, pi, sqrt
+from math import sqrt
 from random import uniform, gauss
 import numpy as np
 from myVector import myVector
@@ -37,9 +37,9 @@ class Entity:
         self.image_ = self.image_source_
         self.friends = []
         
-    def update(self, others, scaryblobs):                    
+    def update(self, entities, scaryblobs, jaws):                    
             
-        self.getFriends(others)
+        self.getFriends(entities)
                 
         _group = self.groupWithFriends()
         _align = self.alignOnFriends()
