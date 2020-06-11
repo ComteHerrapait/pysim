@@ -53,7 +53,7 @@ def main(number):
 
     black = 0, 0, 0
     white = 255, 255, 255
-    FPS = 60;
+    FPS = 60
 
     myfont = pygame.font.SysFont('Arial', 14)
 

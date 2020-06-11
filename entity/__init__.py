@@ -34,7 +34,7 @@ class Entity:
         self.MAX_SPEED = 7 + gauss(0, 1)
         self.speed_ = myVector(speed[0], speed[1])
         self.width_, self.height_ = screen.get_size()
-        self.position_ = pygame.Rect(pos[0], pos[1], 0, 0)
+        self.position_ = pygame.Rect(pos[0], pos[1], 0, 0) #TODO : change position type
         self.friends = []
         self.color = [uniform(0, 255), uniform(0, 255), uniform(0, 255)]
 
@@ -76,16 +76,16 @@ class Entity:
         pygame.draw.line(screen, self.camoFriends(), pos, head)
 
     def warpOnEdges(self):
-        if (self.position_[0] < BORDER_X):
+        if self.getPos()[0] < BORDER_X:
             self.position_[0] = self.width_ - BORDER_X
 
-        if (self.position_[1] < BORDER_X):
+        if self.getPos()[1] < BORDER_X:
             self.position_[1] = self.height_ - BORDER_Y
 
-        if (self.position_[0] > self.width_ - BORDER_X):
+        if self.getPos()[0] > self.width_ - BORDER_X:
             self.position_[0] = BORDER_X
 
-        if (self.position_[1] > self.height_ - BORDER_X):
+        if self.getPos()[1] > self.height_ - BORDER_X:
             self.position_[1] = BORDER_Y
 
     def distance(self, point):
@@ -99,7 +99,7 @@ class Entity:
 
     def getFriends(self, others):
         neighbors = [e for e in others if
-                     (0 < self.distance(e.position_) and self.distance(e.position_) < FRIEND_RADIUS)]
+                     (0 < self.distance(e.position_) < FRIEND_RADIUS)]
         self.friends = neighbors
 
     def alignOnFriends(self):
@@ -132,7 +132,7 @@ class Entity:
         for f in self.friends:
             pos = f.getPos()
             d = self.distance(pos)
-            if d < CONFORT_ZONE and d > 0:
+            if CONFORT_ZONE > d > 0:
                 vect = myVector(self.position_[0] - pos[0], self.position_[1] - pos[1])
                 vect.multiply(1 / d)
                 total.add(vect)
@@ -147,7 +147,7 @@ class Entity:
             if dist < sb.DEATH_ZONE:
                 self.color = (255, 255, 255)
                 self.die()
-            if dist < FRIEND_RADIUS and dist > 0:
+            if FRIEND_RADIUS > dist > 0:
                 vect = myVector(self.position_[0] - sb.position[0], self.position_[1] - sb.position[1])
                 vect.multiply(1 / dist)
                 total.add(vect)
@@ -173,7 +173,7 @@ class Entity:
         total = myVector(0, 0)
         for j in jaws:
             dist = self.distance(j.position_)
-            if dist < FRIEND_RADIUS and dist > 0:
+            if FRIEND_RADIUS > dist > 0:
                 vect = myVector(self.position_[0] - j.position_[0], self.position_[1] - j.position_[1])
                 vect.multiply(1 / dist)
                 total.add(vect)
