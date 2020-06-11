@@ -8,7 +8,7 @@ Created on Mon Jun  1 17:54:20 2020
 import pygame
 from entity import Entity
 from random import uniform
-from numpy import floor, average
+from numpy import floor, average, floor
 from sys import argv
 from ScaryBlob import ScaryBlob
 from TheJaws import TheJaws
@@ -88,8 +88,13 @@ def main(number):
         pygame.draw.line(screen, (0,255,0), (20,height-20), (20,20))
             #movement
         for j in jaws:
-            j.update(entities, scaryblobs, jaws)
-            j.diplayJaws(screen)
+            if j.isAlive() :
+                j.update(entities, scaryblobs, jaws)
+                j.diplayJaws(screen)
+                textsurface = myfont.render(str(floor(j.hunger))[:-2],True, (255, 0, 0))
+                screen.blit(textsurface,(j.position_[0]+10,j.position_[1]+10))
+            else:
+                jaws.remove(j)
 
         for e in entities:
             if not e.isAlive():
