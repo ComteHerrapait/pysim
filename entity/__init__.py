@@ -10,7 +10,7 @@ from random import uniform, gauss
 import numpy as np
 from myVector import myVector
 
-MAX_SPEED = 7
+
 FRIEND_RADIUS = 120
 INDIVIDUAL_SIZE = 30
 CONFORT_ZONE = 60
@@ -28,6 +28,8 @@ class Entity:
     
     def __init__(self, screen, pos, speed):
         """constructor"""
+        self.alive = True
+        self.MAX_SPEED = 7 + gauss(0,1)
         self.speed_ = myVector(speed[0],speed[1])
         self.width_, self.height_ = screen.get_size()
         img = pygame.image.load("arrow-white.png")
@@ -36,9 +38,9 @@ class Entity:
         self.position_.move_ip(pos)
         self.image_ = self.image_source_
         self.friends = []
+        self.color = (0,0,255)
         
-    def update(self, entities, scaryblobs, jaws):                    
-            
+    def update(self, entities, scaryblobs, jaws):                                
         self.getFriends(entities)
                 
         _group = self.groupWithFriends()
@@ -46,16 +48,21 @@ class Entity:
         _dodge = self.dodgeFriends()
         _scare = self.dodgeScary(scaryblobs)
         _edges = self.dodgeEdges()
+        _enemy = self.dodgeJaws(jaws)
         
-        _group.multiply(0.1)
+        _group.multiply(0.5)
+        _enemy.multiply(1)
+        _dodge.multiply(2)
+        _edges.multiply(2)
         
-        self.speed_.add(_group)
-        self.speed_.add(_align)
-        self.speed_.add(_dodge)
-        self.speed_.add(_scare)       
-        self.speed_.add(_edges)
+        if _group.getNorm() > 0 :self.speed_.add(_group)
+        if _align.getNorm() > 0 :self.speed_.add(_align)
+        if _dodge.getNorm() > 0 :self.speed_.add(_dodge)
+        if _scare.getNorm() > 0 :self.speed_.add(_scare)       
+        if _edges.getNorm() > 0 :self.speed_.add(_edges)
+        if _enemy.getNorm() > 0 :self.speed_.add(_enemy)
         
-        self.speed_.rotate(gauss(0,1)/50)
+        self.addNoise()
         self.limitSpeed()
         
         self.move()
@@ -78,8 +85,8 @@ class Entity:
             
     def displaySimple(self,screen):
         pos = self.getPos()
-        head = [pos[0] + 3 * self.speed_.x, pos[1] + 3 * self.speed_.y]
-        pygame.draw.circle(screen, (0,0,255), pos, 6)
+        head = [pos[0] - 3 * self.speed_.x, pos[1] - 3 * self.speed_.y]
+        pygame.draw.circle(screen, self.color, pos, 6)
         pygame.draw.line(screen, (0,255,0), pos, head)
         
     def warpOnEdges(self):
@@ -99,10 +106,10 @@ class Entity:
         return sqrt ( (point[0] - self.position_[0])**2 +
                     (  point[1] - self.position_[1])**2  )
     
-    def limitSpeed(self, ceiling = MAX_SPEED):
+    def limitSpeed(self):
         speedNorm = self.speed_.getNorm()
-        if speedNorm > ceiling :
-            self.speed_.multiply(ceiling/self.speed_.getNorm())
+        if speedNorm > self.MAX_SPEED :
+            self.speed_.multiply(self.MAX_SPEED/self.speed_.getNorm())
                     
     def getFriends(self, others):
         neighbors = [e for e in others if ( 0 < self.distance(e.position_) and self.distance(e.position_) < FRIEND_RADIUS )]
@@ -117,13 +124,11 @@ class Entity:
         return totalSpeed
         
     def addNoise(self):
-        if (uniform(0,10) > 7) :
-            noise = myVector( gauss(0,1) ,
-                              gauss(0,1) )
-            noise.normalize()
-            return noise
-        else:
-            return myVector(0,0)
+        if uniform(0, 1) < 0.1 :
+            angle = gauss(0,10)
+        else : 
+            angle = 0
+        self.speed_.rotate(angle)
     
     def groupWithFriends(self):
         if len(self.friends) == 0 : return myVector(0,0)
@@ -152,6 +157,9 @@ class Entity:
         total = myVector(0,0)
         for sb in scaryblobs:
             dist = self.distance(sb.position)
+            if dist < sb.DEATH_ZONE :
+                self.color = (255,255,255)
+                self.die()
             if dist < FRIEND_RADIUS and dist > 0:
                 vect = myVector ( self.position_[0]-sb.position[0], self.position_[1]-sb.position[1] )
                 vect.multiply(1/dist)
@@ -160,17 +168,38 @@ class Entity:
         return total
     
     def dodgeEdges(self):
-        X = 0
-        Y = 0
-        return myVector(X,Y)
-          
+        dodge = myVector(0, 0)
+        if self.position_[0] < FRIEND_RADIUS:
+            dodge = myVector(self.width_/2 - self.position_[0], self.height_/2 - self.position_[1])
+        elif self.position_[1] < FRIEND_RADIUS:
+            dodge = myVector(self.width_/2 - self.position_[0], self.height_/2 - self.position_[1])
+        elif self.position_[0] > self.width_ - FRIEND_RADIUS:
+            dodge = myVector(self.width_/2 - self.position_[0], self.height_/2 - self.position_[1])
+        elif self.position_[1] > self.height_ - FRIEND_RADIUS:
+            dodge = myVector(self.width_/2 - self.position_[0], self.height_/2 - self.position_[1])
         
+        dodge.normalize()
+        return dodge
+          
+    def dodgeJaws(self, jaws):
+        if len(jaws) == 0 : return myVector(0,0)
+        total = myVector(0,0)
+        for j in jaws:
+            dist = self.distance(j.position_)
+            if dist < FRIEND_RADIUS and dist > 0:
+                vect = myVector ( self.position_[0]-j.position_[0], self.position_[1]-j.position_[1] )
+                vect.multiply(1/dist)
+                total.add(vect)
+        total.normalize()
+        return total
+    
     def getPos(self):
         return [ self.position_[0], self.position_[1]]
     
     def newScreen(self,screen):
         self.width_, self.height_ = screen.get_size()
 
-    def __del__(self):
-        """destructor"""
-        pass
+    def die(self):
+        self.alive = False
+    def isAlive(self):
+        return self.alive
