@@ -57,7 +57,7 @@ class TheJaws(Entity):
         self.hunger += max(0, gauss(0,0.3))
         
         self.addNoise()
-        self.limitSpeed()
+        self.limitSpeed(self.MAX_SPEED + 3*self.hunger/100 ) #hungrier -> faster speed
         
         self.move()
         self.warpOnEdges()

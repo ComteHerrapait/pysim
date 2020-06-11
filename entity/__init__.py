@@ -38,11 +38,11 @@ class Entity:
         self.position_.move_ip(pos)
         self.image_ = self.image_source_
         self.friends = []
-        self.color = (0,0,255)
+        self.color = [uniform(0,255),uniform(0,255),uniform(0,255)]
         
     def update(self, entities, scaryblobs, jaws):                                
         self.getFriends(entities)
-                
+        
         _group = self.groupWithFriends()
         _align = self.alignOnFriends()
         _dodge = self.dodgeFriends()
@@ -63,7 +63,7 @@ class Entity:
         if _enemy.getNorm() > 0 :self.speed_.add(_enemy)
         
         self.addNoise()
-        self.limitSpeed()
+        self.limitSpeed(self.MAX_SPEED + len(self.friends)/10) #more friends -> faster speed
         
         self.move()
         self.warpOnEdges()        
@@ -86,8 +86,8 @@ class Entity:
     def displaySimple(self,screen):
         pos = self.getPos()
         head = [pos[0] - 3 * self.speed_.x, pos[1] - 3 * self.speed_.y]
-        pygame.draw.circle(screen, self.color, pos, 6)
-        pygame.draw.line(screen, (0,255,0), pos, head)
+        pygame.draw.circle(screen, self.camoFriends(), pos, 6)
+        pygame.draw.line(screen, self.camoFriends(), pos, head)
         
     def warpOnEdges(self):
         if (self.position_[0] < BORDER_X) :
@@ -106,10 +106,10 @@ class Entity:
         return sqrt ( (point[0] - self.position_[0])**2 +
                     (  point[1] - self.position_[1])**2  )
     
-    def limitSpeed(self):
+    def limitSpeed(self, ceiling):
         speedNorm = self.speed_.getNorm()
-        if speedNorm > self.MAX_SPEED :
-            self.speed_.multiply(self.MAX_SPEED/self.speed_.getNorm())
+        if speedNorm > ceiling :
+            self.speed_.multiply(ceiling/self.speed_.getNorm())
                     
     def getFriends(self, others):
         neighbors = [e for e in others if ( 0 < self.distance(e.position_) and self.distance(e.position_) < FRIEND_RADIUS )]
@@ -193,6 +193,20 @@ class Entity:
         total.normalize()
         return total
     
+    def camoFriends(self):
+        if len(self.friends) ==0 : return self.color
+        R = self.color[0]
+        G = self.color[1]
+        B = self.color[2]
+        for f in self.friends:
+            R += f.color[0]
+            G += f.color[1]
+            B += f.color[2]
+        return (R/(len(self.friends)+1),
+                G/(len(self.friends)+1),
+                B/(len(self.friends)+1))
+        
+            
     def getPos(self):
         return [ self.position_[0], self.position_[1]]
     
