@@ -31,10 +31,10 @@ class Entity:
     def __init__(self, screen, pos, speed):
         """constructor"""
         self.alive = True
-        self.MAX_SPEED = 7 + gauss(0, 1)
+        self.MAX_SPEED = 5 + gauss(0, 1)
         self.speed_ = myVector(speed[0], speed[1])
         self.width_, self.height_ = screen.get_size()
-        self.position_ = pygame.Rect(pos[0], pos[1], 0, 0) #TODO : change position type
+        self.position_ = pygame.Rect(pos[0], pos[1], 0, 0)  # TODO : change position type
         self.friends = []
         self.color = [uniform(0, 255), uniform(0, 255), uniform(0, 255)]
 
@@ -72,7 +72,7 @@ class Entity:
     def displaySimple(self, screen):
         pos = self.getPos()
         head = [pos[0] - 3 * self.speed_.x, pos[1] - 3 * self.speed_.y]
-        pygame.draw.circle(screen, self.camoFriends(), pos, 6)
+        pygame.draw.circle(screen, self.camoFriends(), pos, 8)
         pygame.draw.line(screen, self.camoFriends(), pos, head)
 
     def warpOnEdges(self):
@@ -103,7 +103,7 @@ class Entity:
         self.friends = neighbors
 
     def alignOnFriends(self):
-        if len(self.friends) == 0: return myVector(0, 0)
+        if len(self.friends) == 0 : return myVector(0, 0)
         totalSpeed = myVector(0, 0)
         for f in self.friends:
             totalSpeed.add(f.speed_)
@@ -182,16 +182,15 @@ class Entity:
 
     def camoFriends(self):
         if len(self.friends) == 0: return self.color
-        R = self.color[0]
-        G = self.color[1]
-        B = self.color[2]
+        camo = list(self.color)
         for f in self.friends:
-            R += f.color[0]
-            G += f.color[1]
-            B += f.color[2]
-        return (R / (len(self.friends) + 1),
-                G / (len(self.friends) + 1),
-                B / (len(self.friends) + 1))
+            camo[0] += f.color[0]
+            camo[1] += f.color[1]
+            camo[2] += f.color[2]
+
+        return (camo[0] / (len(self.friends) + 1),
+                camo[1] / (len(self.friends) + 1),
+                camo[2] / (len(self.friends) + 1))
 
     def getPos(self):
         return [self.position_[0], self.position_[1]]

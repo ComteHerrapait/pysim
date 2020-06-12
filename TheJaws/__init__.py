@@ -1,10 +1,10 @@
 #
-from entity import Entity
-from entity import *
-import pygame
 # from math import sqrt
-from random import uniform, gauss
-import numpy as np
+from random import gauss
+
+import pygame
+
+from entity import *
 from myVector import myVector
 
 EATING_TRIGGER = 10
@@ -15,7 +15,7 @@ class TheJaws(Entity):
 
     def __init__(self, screen, pos, speed):
         super().__init__(screen, pos, speed)
-        self.MAX_SPEED = 7
+        self.MAX_SPEED = 5
         self.EAT_RADIUS = 50
         self.VISION_RADIUS = 180
         self.hunger = 0

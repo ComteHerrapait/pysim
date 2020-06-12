@@ -8,4 +8,4 @@ class ScaryBlob:
         self.DEATH_ZONE = 20
     
     def display(self, screen):
-        pygame.draw.circle(screen, (255,0,255), self.position, 10)
+        pygame.draw.circle(screen, (155, 155, 155), self.position, 20)
