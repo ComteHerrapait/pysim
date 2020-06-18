@@ -39,7 +39,7 @@ class Entity:
         self.color = [uniform(0, 255), uniform(0, 255), uniform(0, 255)]
 
     def update(self, entities, scaryblobs, jaws):
-        self.getFriends(entities)
+        self.getFriends2(entities)
 
         _group = self.groupWithFriends()
         _align = self.alignOnFriends()
@@ -102,11 +102,19 @@ class Entity:
                      (0 < self.distance(e.position_) < FRIEND_RADIUS)]
         self.friends = neighbors
 
+    def getFriends2(self, others):
+        neighbors = []
+        for e in others:
+            dist = self.distance(e.position_)
+            if 0 < dist < FRIEND_RADIUS:
+                neighbors.append((e, dist))
+        self.friends = neighbors
+
     def alignOnFriends(self):
-        if len(self.friends) == 0 : return myVector(0, 0)
+        if len(self.friends) == 0: return myVector(0, 0)
         totalSpeed = myVector(0, 0)
-        for f in self.friends:
-            totalSpeed.add(f.speed_)
+        for friend in self.friends:
+            totalSpeed.add(friend[0].speed_)
         totalSpeed.normalize()
         return totalSpeed
 
@@ -119,7 +127,7 @@ class Entity:
 
     def groupWithFriends(self):
         if len(self.friends) == 0: return myVector(0, 0)
-        friends_pos = [f.getPos() for f in self.friends]
+        friends_pos = [f.getPos() for f,d in self.friends]
         group_pos = np.average(friends_pos, axis=0)
         vector = myVector((group_pos[0] - self.position_[0]),
                           (group_pos[1] - self.position_[1]))
@@ -129,12 +137,11 @@ class Entity:
     def dodgeFriends(self):
         if len(self.friends) == 0: return myVector(0, 0)
         total = myVector(0, 0)
-        for f in self.friends:
-            pos = f.getPos()
-            d = self.distance(pos)
-            if CONFORT_ZONE > d > 0:
+        for friend in self.friends: # friend[1] is distance to said friend
+            pos = friend[0].getPos()
+            if CONFORT_ZONE > friend[1] > 0:
                 vect = myVector(self.position_[0] - pos[0], self.position_[1] - pos[1])
-                vect.multiply(1 / d)
+                vect.multiply(1 / friend[1])
                 total.add(vect)
         total.normalize()
         return total
@@ -183,10 +190,10 @@ class Entity:
     def camoFriends(self):
         if len(self.friends) == 0: return self.color
         camo = list(self.color)
-        for f in self.friends:
-            camo[0] += f.color[0]
-            camo[1] += f.color[1]
-            camo[2] += f.color[2]
+        for friend in self.friends:
+            camo[0] += friend[0].color[0]
+            camo[1] += friend[0].color[1]
+            camo[2] += friend[0].color[2]
 
         return (camo[0] / (len(self.friends) + 1),
                 camo[1] / (len(self.friends) + 1),

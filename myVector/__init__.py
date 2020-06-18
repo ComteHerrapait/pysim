@@ -26,7 +26,7 @@ class myVector:
             self.multiply(1/self.getNorm())
         
     def getAngle(self):
-        return - atan2(self.y,self.x)*180/pi
+        return - atan2(self.y, self.x)*180/pi
     
     def rotate(self, angle):
         angle = - angle * pi / 180
@@ -40,4 +40,4 @@ class myVector:
     
     def display(self) :
         print("x:",self.x,"\ty:",self.y,
-              "\nangle:",self.getAngle(),"\tnorm :", self.getNorm() )
+              "\nangle:", self.getAngle(), "\tnorm :", self.getNorm() )
