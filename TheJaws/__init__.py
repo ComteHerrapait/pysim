@@ -3,7 +3,7 @@
 from random import gauss
 
 import pygame
-
+import tensorflow as tf
 from entity import *
 from myVector import myVector
 
