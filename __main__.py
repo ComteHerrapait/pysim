@@ -142,6 +142,7 @@ def main(number):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     print("closing... (esc)")
+                    plotData(times, avgMaxSpeed, numberAlive, True)
                     running = False
                 elif event.key == pygame.K_e:
                     entities = []
