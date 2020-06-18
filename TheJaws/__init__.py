@@ -35,7 +35,7 @@ class TheJaws(Entity):
         if self.hunger > 100:
             self.die()
 
-        self.getFriends(jaws)
+        self.getFriends2(jaws)
 
         _group = self.groupWithFriends()
         _align = self.alignOnFriends()
