@@ -113,8 +113,8 @@ class Entity:
     def alignOnFriends(self):
         if len(self.friends) == 0: return myVector(0, 0)
         totalSpeed = myVector(0, 0)
-        for friend in self.friends:
-            totalSpeed.add(friend[0].speed_)
+        for friend in [f[0] for f in self.friends]:
+            totalSpeed.add(friend.speed_)
         totalSpeed.normalize()
         return totalSpeed
 
@@ -137,11 +137,11 @@ class Entity:
     def dodgeFriends(self):
         if len(self.friends) == 0: return myVector(0, 0)
         total = myVector(0, 0)
-        for friend in self.friends: # friend[1] is distance to said friend
-            pos = friend[0].getPos()
-            if CONFORT_ZONE > friend[1] > 0:
+        for friendDist, (friend, dist) in enumerate(self.friends):
+            pos = friend.getPos()
+            if CONFORT_ZONE > dist > 0:
                 vect = myVector(self.position_[0] - pos[0], self.position_[1] - pos[1])
-                vect.multiply(1 / friend[1])
+                vect.multiply(1 / dist)
                 total.add(vect)
         total.normalize()
         return total
@@ -190,10 +190,10 @@ class Entity:
     def camoFriends(self):
         if len(self.friends) == 0: return self.color
         camo = list(self.color)
-        for friend in self.friends:
-            camo[0] += friend[0].color[0]
-            camo[1] += friend[0].color[1]
-            camo[2] += friend[0].color[2]
+        for friend in [f[0] for f in self.friends]: # only the friends no the dist
+            camo[0] += friend.color[0]
+            camo[1] += friend.color[1]
+            camo[2] += friend.color[2]
 
         return (camo[0] / (len(self.friends) + 1),
                 camo[1] / (len(self.friends) + 1),
